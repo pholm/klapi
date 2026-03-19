@@ -23,7 +23,7 @@ Admin-käyttäjällä on laajennetut oikeudet hallita kalustoa, käyttäjiä, va
 ### 1.3. Tavaran poistaminen
 
 - Siirry tavaran sivulle ja paina **Poista**
-- Vahvista poisto modalissa
+- Vahvista poisto
 
 ---
 
@@ -36,8 +36,8 @@ Admin-käyttäjällä on laajennetut oikeudet hallita kalustoa, käyttäjiä, va
 
 ### 2.2. Varauksen hyväksyminen ja aloittaminen
 
-- Voit hyväksyä varauksen (muuttaa tilan "ACCEPTED" → "INUSE")
-- Voit aloittaa varauksen puolesta (esim. jos käyttäjä ei itse pysty)
+- Kaikki varaukset ovat hyväksytty-tilassa lähtökohtaisesti
+- Käyttäjän tulisi itse merkitä nouto ja palautus kaluston koneella, mutta admin voi tarvittaessa aloittaa varauksen
 
 ### 2.3. Varauksen muokkaaminen
 
@@ -71,12 +71,12 @@ Admin-käyttäjällä on laajennetut oikeudet hallita kalustoa, käyttäjiä, va
 
 ### 3.4. Kiosk-salasanan luominen
 
-- Voit luoda uuden kiosk-salasanan admin-paneelista
+- Voit luoda uuden kiosk-käyttäjän (kaluston kone) salasanan admin-paneelista
 - Salasana näytetään modaalissa
 
 ### 3.5. Admin PIN-koodin asettaminen
 
-- Voit asettaa admin PIN-koodin, jota käytetään admin-oikeuksien nostoon kioskissa
+- Voit asettaa admin PIN-koodin, jota käytetään admin-oikeuksien käyttöönottoon kaluston koneella
 
 ---
 
@@ -101,7 +101,6 @@ Admin-käyttäjällä on laajennetut oikeudet hallita kalustoa, käyttäjiä, va
 - PIN-koodin syöttö avaa admin-oikeudet kioskissa määräajaksi (30 min)
 - Oikeudet vanhenevat automaattisesti, jonka jälkeen rooli palautuu kioskiksi
 - PIN-koodin voi asettaa admin-paneelissa kohdasta "Aseta admin pin-koodi"
-- Kiosk-käyttäjän salasana voidaan luoda admin-paneelista (näkyy modaalissa, voimassa rajoitetun ajan)
 
 ---
 
@@ -109,10 +108,25 @@ Admin-käyttäjällä on laajennetut oikeudet hallita kalustoa, käyttäjiä, va
 
 - Näet kaikki raportit (`/admin/reports`)
 - Raportit liittyvät puutteisiin, vaurioihin ja muihin ongelmiin (esim. tavara rikki, puuttuu, väärä määrä)
-- Raportti voi liittyä lainaan, varaukseen tai yksittäiseen tavaraan
-- Raportin tiedoista näet mm. sisällön, kohteet, liittyvän lainan ja raportin tilan (käsittelemättä, käsittelyssä, ratkaistu)
-- Voit merkitä raportin käsitellyksi (esim. "Ratkaistu"/"RESOLVED")
-- Raportit auttavat seuraamaan kaluston kuntoa ja puutteita
+- Raportti yhdistetään aina koko lainaan, mutta voi liittyä vain yhteen tavaraan
+- Raportin tiedoista näet mm. sisällön, kohteet, liittyvän lainan ja raportin tilan
+
+### Raportin tilat ja käsittely
+
+- **Avoin (OPEN):** Raportti on juuri jätetty ja odottaa käsittelyä.
+- **Käsittelyssä (IN_PROGRESS):** Raportin käsittely on aloitettu, esim. vika tarkistetaan tai puute selvitetään.
+- **Ratkaistu (RESOLVED):** Raportti on käsitelty ja merkitty valmiiksi (esim. tavara korjattu, puute kuitattu, muu toimenpide tehty).
+
+Raportin tilaa voi muuttaa raporttisivulla. Suositeltu prosessi:
+
+1. Uusi raportti on tilassa "Avoin" (OPEN)
+2. Kun käsittely aloitetaan, vaihda tila "Käsittelyssä" (IN_PROGRESS)
+3. Kun asia on hoidettu, vaihda tila "Ratkaistu" (RESOLVED)
+
+### Affected items (vaikuttavat tavarat)
+
+- Mikäli raportti liittyy tiettyihin tavaroihin (esim. puuttuva tai rikki), voit määrittää ne "Affected items" -osiossa
+- Admin voi muokata raporttia ja määrittää, mihin tavaroihin ja kuinka moneen kappaleeseen raportti vaikuttaa. Tavarat eivät ole lainattavissa niin kauan kuin raportti on **Käsittelyssä** (IN_PROGRESS)
 
 ---
 
@@ -120,10 +134,6 @@ Admin-käyttäjällä on laajennetut oikeudet hallita kalustoa, käyttäjiä, va
 
 - Admin voi ottaa käyttöön viikottaisen muistutuksen bokseissa olevista varauksista
 - Admin saa ilmoituksen uusista varauksista, jos ilmoitukset ovat päällä
-
----
-
-## 7. API-toiminnot
 
 ---
 
@@ -135,25 +145,6 @@ Admin-käyttäjällä on laajennetut oikeudet hallita kalustoa, käyttäjiä, va
 - Ilmoituksella voi olla vanhenemisaika, jonka jälkeen se ei enää näy oletuksena
 - Admin voi tarkastella myös vanhentuneita ilmoituksia ("Näytä vanhentuneet ilmoitukset")
 - Ilmoitukset ovat hyödyllisiä esimerkiksi huolto-, käyttö- tai varoitusviesteihin
-
-- Kaikki admin-toiminnot (lisäys, muokkaus, poisto) on suojattu: vain admin voi käyttää näitä API-päätepisteitä
-- Esim. `/api/item/editItem`, `/api/item/deleteItem`, `/api/user/getUsers`, `/api/loan/approveLoan` jne.
-
----
-
-## 8. Oikeuksien hallinta
-
-- Admin-oikeudet voidaan nostaa PIN-koodilla kioskissa
-- Admin-oikeudet vanhenevat automaattisesti (esim. session adminExpiry)
-- Oikeuksien vanhentuessa rooli palautuu kioskiksi
-
----
-
-## 9. Käyttöliittymä
-
-- Adminille näkyy lisävalinnat ylävalikossa: **Admin**, **Laatikot**, **Raportit**
-- Admin näkee lisätietoja varauksista, tavaroista ja käyttäjistä
-- Kaikki admin-toiminnot on suojattu: muut käyttäjät eivät näe eivätkä voi käyttää näitä
 
 ---
 
